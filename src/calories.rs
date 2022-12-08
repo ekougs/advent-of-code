@@ -1,11 +1,11 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use min_max_heap::MinMaxHeap;
 
-pub fn count_calories() -> i64 {
-
+pub fn count_calories(calories_filename: &str, topn: usize) -> i64 {
     // Create a path to the desired file
-    let calories_input_path = Path::new("calories_input_1_2.txt");
+    let calories_input_path = Path::new(calories_filename);
     let display = calories_input_path.display();
 
     // Open the path in read-only mode, returns `io::Result<File>`
@@ -20,18 +20,22 @@ pub fn count_calories() -> i64 {
         Ok(_) => {},
     };
 
-    let mut max_calories = 0;
     let mut current_calories = 0;
+    let mut topn_calories: MinMaxHeap<i64> = MinMaxHeap::with_capacity(topn);
+
     for line in calories_file_content.lines() {
         match line.parse::<i64>().map(|i| i) {
             Ok(n) => current_calories += n,
             Err(..) => {
-                if max_calories < current_calories {
-                    max_calories = current_calories;
+                if topn_calories.len() < topn {
+                    topn_calories.push(current_calories);
+                } else if topn_calories.peek_min().map_or(0, |calories| *calories) < current_calories {
+                    topn_calories.pop_min();
+                    topn_calories.push(current_calories);
                 }
                 current_calories = 0;
             }
         }
     }
-    max_calories
+    topn_calories.iter().sum()
 }
