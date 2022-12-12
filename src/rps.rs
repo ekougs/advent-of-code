@@ -37,6 +37,18 @@ impl RPSElement {
         panic!("could not find RPSElement from {}", repr)
     }
 
+    fn from_order(order: char, other: &RPSElement) -> &RPSElement {
+        match order {
+            // Lose
+            'X' => &GAME[RPSElement::winning_against_idx(other)],
+            // Draw
+            'Y' => other,
+            // Win
+            'Z' => &GAME[RPSElement::losing_against_idx(other)],
+            _ => panic!("Unknown order"),
+        }
+    }
+
     fn score(&self, other: &RPSElement) -> u32 {
         if self == other {
             return 3 + self.value
@@ -66,6 +78,15 @@ impl RPSElement {
             game_idx - 1
         }
     }
+
+    fn losing_against_idx(elt: &RPSElement) -> usize {
+        let game_idx = RPSElement::game_idx(elt);
+        if game_idx == 2 {
+            0
+        } else {
+            game_idx + 1
+        }
+    }
 }
 
 impl fmt::Display for RPSElement {
@@ -85,6 +106,20 @@ pub fn score_as_provided(rps_filename: &str) -> u32 {
         let mut rps_str_elements = line.split(" ");
         let rps_against = map_rps_str(rps_str_elements.next(), RPSElement::from);
         let rps_for = map_rps_str(rps_str_elements.next(), RPSElement::from);
+        let current_score = rps_for.score(&rps_against);
+        score += current_score;
+    });
+    score
+}
+
+pub fn score_as_ordered(rps_filename: &str) -> u32 {
+    let mut score: u32 = 0;
+    apply_on_lines(rps_filename, |line: &str| -> () {
+        let mut rps_str_elements = line.split(" ");
+        let rps_against = map_rps_str(rps_str_elements.next(), RPSElement::from);
+        let rps_for = map_rps_str(rps_str_elements.next(), |c| {
+            RPSElement::from_order(c, &rps_against)
+        });
         let current_score = rps_for.score(&rps_against);
         score += current_score;
     });
