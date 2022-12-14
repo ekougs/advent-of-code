@@ -13,5 +13,6 @@ fn main() {
     println!("Rock paper scissor {}", rps::score_as_ordered("rock_paper_scissor_input.txt"));
 
     // Day 3
-    println!("Rucksacks' priorities {}", rucksack::prioritize("rucksacks_input.txt"))
+    println!("Rucksacks' priorities {}", rucksack::prioritize_for_diff_in_rumsack("rucksacks_input.txt"));
+    println!("Rucksacks' priorities {}", rucksack::prioritize_for_group_common("rucksacks_input.txt"));
 }
