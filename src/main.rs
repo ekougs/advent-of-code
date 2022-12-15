@@ -2,6 +2,7 @@ mod calories;
 mod rps;
 mod utils;
 mod rucksack;
+mod pairs;
 
 fn main() {
     // Day 1
@@ -15,4 +16,8 @@ fn main() {
     // Day 3
     println!("Rucksacks' priorities {}", rucksack::prioritize_for_diff_in_rumsack("rucksacks_input.txt"));
     println!("Rucksacks' priorities {}", rucksack::prioritize_for_group_common("rucksacks_input.txt"));
+
+    // Day 4
+    println!("Covering pairs {}", pairs::covering("covering_pairs_input.txt"));
+    println!("Covering pairs {}", pairs::overlaping("covering_pairs_input.txt"));
 }
