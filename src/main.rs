@@ -13,6 +13,8 @@ mod crates;
 // Rucksacks' priorities 2525
 // Covering pairs 532
 // Covering pairs 854
+// Arrange crates CWMTGHBDW
+// Arrange crates SSCGWJCRB
 
 fn main() {
     // Day 1
@@ -32,5 +34,6 @@ fn main() {
     println!("Covering pairs {}", pairs::overlaping("covering_pairs_input.txt"));
 
     // Day 5
-    println!("Arrange crates {}", crates::arrange("crates_input.txt"));
+    println!("Arrange crates {}", crates::arrange_one_by_one("crates_input.txt"));
+    println!("Arrange crates {}", crates::arrange_mult("crates_input.txt"));
 }

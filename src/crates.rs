@@ -72,15 +72,35 @@ impl Crates {
         }
     }
 
-    fn move_crate(&mut self, move_order: CrateMoveOrder) {
+    fn move_crates(&mut self, move_order: CrateMoveOrder) {
         for  _ in 0..move_order.quantity {
             let moved_crate = self.columns[move_order.from - 1].pop_front().unwrap();
             self.columns[move_order.to - 1].push_front(moved_crate);
         }
     }
+
+    fn move_crates_mult(&mut self, move_order: CrateMoveOrder) {
+        let mut moved_crates = VecDeque::new();
+        for  _ in 0..move_order.quantity {
+            let moved_crate = self.columns[move_order.from - 1].pop_front().unwrap();
+            moved_crates.push_back(moved_crate);
+        }
+        for moved_crate in moved_crates.into_iter().rev() {
+            self.columns[move_order.to - 1].push_front(moved_crate);
+        }
+    }
 }
 
-pub fn arrange(crates_filename: &str) -> String {
+pub fn arrange_one_by_one(crates_filename: &str) -> String {
+    arrange(crates_filename, |crates, move_order| crates.move_crates(move_order))
+
+}
+
+pub fn arrange_mult(crates_filename: &str) -> String {
+    arrange(crates_filename, |crates, move_order| crates.move_crates_mult(move_order))
+}
+
+fn arrange<MF>(crates_filename: &str, mut move_fn: MF) -> String where MF: FnMut(&mut Crates, CrateMoveOrder) -> () {
     let mut crates = Crates { columns: Vec::new()};
     if let Ok(lines) = lines(crates_filename) {
         for maybe_line in lines {
@@ -98,7 +118,7 @@ pub fn arrange(crates_filename: &str) -> String {
                         }
                     },
                     Some(CratesElt::CratesMoveOrder(move_order)) => {
-                        crates.move_crate(move_order);
+                        move_fn(&mut crates, move_order);
                     },
                     _ => continue,
                 }
