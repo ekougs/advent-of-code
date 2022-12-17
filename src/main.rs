@@ -4,6 +4,15 @@ mod utils;
 mod rucksack;
 mod pairs;
 
+// Calories 72478
+// Calories 210367
+// Rock paper scissor 15572
+// Rock paper scissor 16098
+// Rucksacks' priorities 7581
+// Rucksacks' priorities 2525
+// Covering pairs 532
+// Covering pairs 854
+
 fn main() {
     // Day 1
     println!("Calories {}", calories::count_calories("calories_input.txt", 1));

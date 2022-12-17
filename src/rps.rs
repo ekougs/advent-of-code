@@ -1,7 +1,7 @@
-use crate::utils::apply_on_lines;
-use std::fmt;
+use crate::utils::lines;
 use std::cmp::Eq;
 use std::cmp::PartialEq;
+use std::fmt;
 use std::hash::Hash;
 
 #[derive(Eq, PartialEq, Hash)]
@@ -51,7 +51,7 @@ impl RPSElement {
 
     fn score(&self, other: &RPSElement) -> u32 {
         if self == other {
-            return 3 + self.value
+            return 3 + self.value;
         }
         let score_against = if other == &GAME[RPSElement::winning_against_idx(self)] {
             6
@@ -66,7 +66,7 @@ impl RPSElement {
             ROCK => 0,
             PAPER => 1,
             SCISSOR => 2,
-            _ => panic!("Could not match rps element")
+            _ => panic!("Could not match rps element"),
         }
     }
 
@@ -102,31 +102,42 @@ impl fmt::Display for RPSElement {
 
 pub fn score_as_provided(rps_filename: &str) -> u32 {
     let mut score: u32 = 0;
-    apply_on_lines(rps_filename, |line: &str| -> () {
-        let mut rps_str_elements = line.split(" ");
-        let rps_against = map_rps_str(rps_str_elements.next(), RPSElement::from);
-        let rps_for = map_rps_str(rps_str_elements.next(), RPSElement::from);
-        let current_score = rps_for.score(&rps_against);
-        score += current_score;
-    });
+    if let Ok(lines) = lines(rps_filename) {
+        for maybe_line in lines {
+            if let Ok(line) = maybe_line {
+                let mut rps_str_elements = line.split(" ");
+                let rps_against = map_rps_str(rps_str_elements.next(), RPSElement::from);
+                let rps_for = map_rps_str(rps_str_elements.next(), RPSElement::from);
+                let current_score = rps_for.score(&rps_against);
+                score += current_score;
+            }
+        }
+    };
     score
 }
 
 pub fn score_as_ordered(rps_filename: &str) -> u32 {
     let mut score: u32 = 0;
-    apply_on_lines(rps_filename, |line: &str| -> () {
-        let mut rps_str_elements = line.split(" ");
-        let rps_against = map_rps_str(rps_str_elements.next(), RPSElement::from);
-        let rps_for = map_rps_str(rps_str_elements.next(), |c| {
-            RPSElement::from_order(c, &rps_against)
-        });
-        let current_score = rps_for.score(&rps_against);
-        score += current_score;
-    });
+    if let Ok(lines) = lines(rps_filename) {
+        for maybe_line in lines {
+            if let Ok(line) = maybe_line {
+                let mut rps_str_elements = line.split(" ");
+                let rps_against = map_rps_str(rps_str_elements.next(), RPSElement::from);
+                let rps_for = map_rps_str(rps_str_elements.next(), |c| {
+                    RPSElement::from_order(c, &rps_against)
+                });
+                let current_score = rps_for.score(&rps_against);
+                score += current_score;
+            }
+        }
+    };
     score
 }
 
-fn map_rps_str<CM, T>(rps_str: Option<&str>, mut char_mapper: CM) -> T where CM: FnMut(char) -> T  {
+fn map_rps_str<CM, T>(rps_str: Option<&str>, mut char_mapper: CM) -> T
+where
+    CM: FnMut(char) -> T,
+{
     let rps_char: Option<char> = match rps_str.map(|r| r) {
         Some(s) => s.chars().next(),
         _ => panic!("couldn't find any string next on the line"),
