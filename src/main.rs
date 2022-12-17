@@ -4,6 +4,7 @@ mod utils;
 mod rucksack;
 mod pairs;
 mod crates;
+mod packet;
 
 // Calories 72478
 // Calories 210367
@@ -15,6 +16,7 @@ mod crates;
 // Covering pairs 854
 // Arrange crates CWMTGHBDW
 // Arrange crates SSCGWJCRB
+// Marker starts at 1034
 
 fn main() {
     // Day 1
@@ -36,4 +38,7 @@ fn main() {
     // Day 5
     println!("Arrange crates {}", crates::arrange_one_by_one("crates_input.txt"));
     println!("Arrange crates {}", crates::arrange_mult("crates_input.txt"));
+
+    // Day 6
+    println!("Marker starts at {}", packet::start_idx("start_of_packet_marker_input.txt"))
 }
