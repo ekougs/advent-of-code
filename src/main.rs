@@ -3,6 +3,7 @@ mod rps;
 mod utils;
 mod rucksack;
 mod pairs;
+mod crates;
 
 // Calories 72478
 // Calories 210367
@@ -29,4 +30,7 @@ fn main() {
     // Day 4
     println!("Covering pairs {}", pairs::covering("covering_pairs_input.txt"));
     println!("Covering pairs {}", pairs::overlaping("covering_pairs_input.txt"));
+
+    // Day 5
+    println!("Arrange crates {}", crates::arrange("crates_input.txt"));
 }
