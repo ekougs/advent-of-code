@@ -17,6 +17,7 @@ mod packet;
 // Arrange crates CWMTGHBDW
 // Arrange crates SSCGWJCRB
 // Marker starts at 1034
+// Message starts at 2472
 
 fn main() {
     // Day 1
@@ -40,5 +41,6 @@ fn main() {
     println!("Arrange crates {}", crates::arrange_mult("crates_input.txt"));
 
     // Day 6
-    println!("Marker starts at {}", packet::start_idx("start_of_packet_marker_input.txt"))
+    println!("Marker starts at {}", packet::start_idx("start_of_packet_marker_input.txt", 4));
+    println!("Message starts at {}", packet::start_idx("start_of_packet_marker_input.txt", 14));
 }
