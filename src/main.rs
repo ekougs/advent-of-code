@@ -5,6 +5,7 @@ mod rucksack;
 mod pairs;
 mod crates;
 mod packet;
+mod dirs;
 
 // Calories 72478
 // Calories 210367
@@ -18,6 +19,7 @@ mod packet;
 // Arrange crates SSCGWJCRB
 // Marker starts at 1034
 // Message starts at 2472
+// Dir size < 100_000 1477771
 
 fn main() {
     // Day 1
@@ -43,4 +45,7 @@ fn main() {
     // Day 6
     println!("Marker starts at {}", packet::start_idx("start_of_packet_marker_input.txt", 4));
     println!("Message starts at {}", packet::start_idx("start_of_packet_marker_input.txt", 14));
+
+    // Day 7
+    println!("Dir size < 100_000 {}", dirs::dirs_size("candidate_directories_input.txt", 100_000))
 }
