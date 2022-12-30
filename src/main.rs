@@ -47,5 +47,6 @@ fn main() {
     println!("Message starts at {}", packet::start_idx("start_of_packet_marker_input.txt", 14));
 
     // Day 7
-    println!("Dir size < 100_000 {}", dirs::dirs_size("candidate_directories_input.txt", 100_000))
+    println!("Dir size < 100_000 {}", dirs::dirs_size("candidate_directories_input.txt", 100_000));
+    println!("Dir size < 100_000 {}", dirs::min_dir_size_to_free("candidate_directories_input.txt", 70_000_000, 30_000_000));
 }

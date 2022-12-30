@@ -6,6 +6,75 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 pub fn dirs_size(dirs_commands_filename: &str, max_size: usize) -> usize {
+    build_dirs_and_apply(dirs_commands_filename, |root_dir| {
+        let mut total_size_under_max = 0;
+        let mut dirs: Vec<Option<Rc<RefCell<Dir>>>> = vec![root_dir];
+        while !dirs.is_empty() {
+            let dir = match dirs.pop() {
+                Some(Some(dir)) => dir,
+                _ => continue,
+            };
+            let size = Dir::size(&dir);
+            if size < max_size {
+                total_size_under_max += size;
+            }
+            match dir.try_borrow() {
+                Ok(dir) => {
+                    for dir in dir.dirs.values() {
+                        dirs.push(Some(Rc::clone(dir)));
+                    }
+                }
+                Err(_) => panic!("could not borrow dir for size_under"),
+            };
+        }
+        total_size_under_max
+    })
+}
+
+pub fn min_dir_size_to_free(dirs_commands_filename: &str, disk_size: usize, size_to_free: usize) -> usize {
+    build_dirs_and_apply(dirs_commands_filename, |opt_root_dir| {
+        let root_dir = match opt_root_dir {
+            Some(root_dir) => root_dir,
+            None => panic!("root dir should not be empty"),
+        };
+        let min_dir_size_to_free = size_to_free + Dir::size(&root_dir) - disk_size;
+        let mut dirs: Vec<Option<Rc<RefCell<Dir>>>> = vec![];
+        match root_dir.try_borrow_mut() {
+            Ok(root_dir) => {
+                for dir in root_dir.dirs.values() {
+                    dirs.push(Some(Rc::clone(dir)));
+                }
+            },
+            Err(_) => panic!("could not borrow dir for mem_size_to_free"),
+        };
+
+        let mut dir_size_to_free: Option<usize> = None;
+        while !dirs.is_empty() {
+            let dir = match dirs.pop() {
+                Some(Some(dir)) => dir,
+                _ => continue,
+            };
+            let size = Dir::size(&dir);
+            if size > min_dir_size_to_free && (dir_size_to_free.is_none() || dir_size_to_free.unwrap() > size) {
+                dir_size_to_free = Some(size);
+            }
+            match dir.try_borrow() {
+                Ok(dir) => {
+                    for dir in dir.dirs.values() {
+                        dirs.push(Some(Rc::clone(dir)));
+                    }
+                }
+                Err(_) => panic!("could not borrow dir for mem_size_to_free"),
+            };
+        }
+        match dir_size_to_free {
+            Some(size) => size,
+            None => panic!("could not find any candidate to clean")
+        }
+    })
+}
+
+fn build_dirs_and_apply<F>(dirs_commands_filename: &str, compute_from: F) -> usize where F: Fn(Option<Rc<RefCell<Dir>>>) -> usize {
     if let Ok(lines) = lines(dirs_commands_filename) {
         let mut root_dir: Option<Rc<RefCell<Dir>>> = None;
         let mut current_dir: Option<Rc<RefCell<Dir>>> = None;
@@ -44,7 +113,7 @@ pub fn dirs_size(dirs_commands_filename: &str, max_size: usize) -> usize {
                 };
             }
         }
-        return Dir::size_under(root_dir, max_size)
+    return compute_from(root_dir)
     };
     panic!("should have found file {}", dirs_commands_filename)
 }
@@ -53,7 +122,7 @@ lazy_static! {
     static ref CD_PARENT_LINE_REGEX: Regex = Regex::new(r"^\$ cd \.\.$").unwrap();
     static ref CD_LINE_REGEX: Regex = Regex::new(r"^\$ cd (.+)$").unwrap();
     static ref DIR_NAME_LINE_REGEX: Regex = Regex::new(r"^dir (.+)$").unwrap();
-    static ref FILE_LINE_REGEX: Regex = Regex::new(r"^(\d+) (.+)$").unwrap();
+    static ref FILE_LINE_REGEX: Regex = Regex::new(r"^(\d+)").unwrap();
     static ref LS_LINE_REGEX: Regex = Regex::new(r"^\$ ls$").unwrap();
 }
 
@@ -151,35 +220,10 @@ impl Dir {
             Err(_) => panic!("could not borrow as mutable the current dir"),
         }
     }
-
-    fn size_under(root_dir: Option<Rc<RefCell<Dir>>>, max_dir_size: usize) -> usize {
-        let mut total_size_under_max = 0;
-        let mut dirs: Vec<Option<Rc<RefCell<Dir>>>> = vec![root_dir];
-        while !dirs.is_empty() {
-            let dir = match dirs.pop() {
-                Some(Some(dir)) => dir,
-                _ => continue,
-            };
-            let size = Dir::size(&dir);
-            if size < max_dir_size {
-                total_size_under_max += size;
-            }
-            match dir.try_borrow() {
-                Ok(dir) => {
-                    for dir in dir.dirs.values() {
-                        dirs.push(Some(Rc::clone(dir)));
-                    }
-                }
-                Err(_) => panic!("could not borrow dir for size_under"),
-            };
-        }
-        total_size_under_max
-    }
 }
 
 #[derive(Clone,Debug)]
 struct File {
-    name: String,
     size: usize,
 }
 
@@ -188,14 +232,9 @@ impl File {
         let mut file_line_matches = FILE_LINE_REGEX.captures_iter(line);
         match file_line_matches.next() {
             Some(captures) => {
-                Ok(File{name: captures[2].to_string(), size: usize::from_str_radix(&captures[1], 10).unwrap()})
+                Ok(File{size: usize::from_str_radix(&captures[1], 10).unwrap()})
             },
             _ => Err(()),
         }
     }
-}
-
-enum ParsingResult {
-    File(File),
-    Dir(Dir),
 }
