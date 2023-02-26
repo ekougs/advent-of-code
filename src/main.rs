@@ -6,6 +6,7 @@ mod pairs;
 mod crates;
 mod packet;
 mod dirs;
+mod trees;
 
 // Calories 72478
 // Calories 210367
@@ -20,6 +21,8 @@ mod dirs;
 // Marker starts at 1034
 // Message starts at 2472
 // Dir size < 100_000 1477771
+// Dir size < 100_000 3579501
+// Nb of visible trees 1684
 
 fn main() {
     // Day 1
@@ -49,4 +52,7 @@ fn main() {
     // Day 7
     println!("Dir size < 100_000 {}", dirs::dirs_size("candidate_directories_input.txt", 100_000));
     println!("Dir size < 100_000 {}", dirs::min_dir_size_to_free("candidate_directories_input.txt", 70_000_000, 30_000_000));
+
+    // Day 8
+    println!("Nb of visible trees {}", trees::nb_visible_trees("tree_house_input.txt"));
 }
