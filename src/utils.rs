@@ -1,5 +1,5 @@
-use std::io::{self, BufRead};
 use std::fs::File;
+use std::io::{self, BufRead};
 
 pub fn lines(filename: &str) -> io::Result<io::Lines<io::BufReader<File>>> {
     let file = File::open(filename)?;

@@ -1,13 +1,15 @@
 use crate::utils::lines;
+use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::VecDeque;
 use std::vec::IntoIter;
 use std::vec::Vec;
-use lazy_static::lazy_static;
 
 lazy_static! {
-    static ref MOVE_ORDER_LINE_REGEX: Regex = Regex::new(r"^move (\d+) from (\d+) to (\d+)$").unwrap();
-    static ref CRATES_LINE_REGEX: Regex = Regex::new(r"^(?:(?:(?: {3})|\[(?:[A-Z])\]) ?)+$").unwrap();
+    static ref MOVE_ORDER_LINE_REGEX: Regex =
+        Regex::new(r"^move (\d+) from (\d+) to (\d+)$").unwrap();
+    static ref CRATES_LINE_REGEX: Regex =
+        Regex::new(r"^(?:(?:(?: {3})|\[(?:[A-Z])\]) ?)+$").unwrap();
 }
 
 struct Crates {
@@ -73,7 +75,7 @@ impl Crates {
     }
 
     fn move_crates(&mut self, move_order: CrateMoveOrder) {
-        for  _ in 0..move_order.quantity {
+        for _ in 0..move_order.quantity {
             let moved_crate = self.columns[move_order.from - 1].pop_front().unwrap();
             self.columns[move_order.to - 1].push_front(moved_crate);
         }
@@ -81,7 +83,7 @@ impl Crates {
 
     fn move_crates_mult(&mut self, move_order: CrateMoveOrder) {
         let mut moved_crates = VecDeque::new();
-        for  _ in 0..move_order.quantity {
+        for _ in 0..move_order.quantity {
             let moved_crate = self.columns[move_order.from - 1].pop_front().unwrap();
             moved_crates.push_back(moved_crate);
         }
@@ -92,23 +94,33 @@ impl Crates {
 }
 
 pub fn arrange_one_by_one(crates_filename: &str) -> String {
-    arrange(crates_filename, |crates, move_order| crates.move_crates(move_order))
-
+    arrange(crates_filename, |crates, move_order| {
+        crates.move_crates(move_order)
+    })
 }
 
 pub fn arrange_mult(crates_filename: &str) -> String {
-    arrange(crates_filename, |crates, move_order| crates.move_crates_mult(move_order))
+    arrange(crates_filename, |crates, move_order| {
+        crates.move_crates_mult(move_order)
+    })
 }
 
-fn arrange<MF>(crates_filename: &str, mut move_fn: MF) -> String where MF: FnMut(&mut Crates, CrateMoveOrder) -> () {
-    let mut crates = Crates { columns: Vec::new()};
+fn arrange<MF>(crates_filename: &str, mut move_fn: MF) -> String
+where
+    MF: FnMut(&mut Crates, CrateMoveOrder) -> (),
+{
+    let mut crates = Crates {
+        columns: Vec::new(),
+    };
     if let Ok(lines) = lines(crates_filename) {
         for maybe_line in lines {
             if let Ok(line) = maybe_line {
                 match Crates::parse_line(&line) {
                     Some(CratesElt::CratesLine(crates_line)) => {
                         if crates.columns.is_empty() {
-                            crates.columns.extend((0..crates_line.len()).map(|_| VecDeque::new()));
+                            crates
+                                .columns
+                                .extend((0..crates_line.len()).map(|_| VecDeque::new()));
                         }
                         for (idx, maybe_crate) in crates_line.enumerate() {
                             match maybe_crate {
@@ -116,10 +128,10 @@ fn arrange<MF>(crates_filename: &str, mut move_fn: MF) -> String where MF: FnMut
                                 _ => continue,
                             }
                         }
-                    },
+                    }
                     Some(CratesElt::CratesMoveOrder(move_order)) => {
                         move_fn(&mut crates, move_order);
-                    },
+                    }
                     _ => continue,
                 }
             }

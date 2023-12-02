@@ -31,7 +31,11 @@ pub fn dirs_size(dirs_commands_filename: &str, max_size: usize) -> usize {
     })
 }
 
-pub fn min_dir_size_to_free(dirs_commands_filename: &str, disk_size: usize, size_to_free: usize) -> usize {
+pub fn min_dir_size_to_free(
+    dirs_commands_filename: &str,
+    disk_size: usize,
+    size_to_free: usize,
+) -> usize {
     build_dirs_and_apply(dirs_commands_filename, |opt_root_dir| {
         let root_dir = match opt_root_dir {
             Some(root_dir) => root_dir,
@@ -44,7 +48,7 @@ pub fn min_dir_size_to_free(dirs_commands_filename: &str, disk_size: usize, size
                 for dir in root_dir.dirs.values() {
                     dirs.push(Some(Rc::clone(dir)));
                 }
-            },
+            }
             Err(_) => panic!("could not borrow dir for mem_size_to_free"),
         };
 
@@ -55,7 +59,9 @@ pub fn min_dir_size_to_free(dirs_commands_filename: &str, disk_size: usize, size
                 _ => continue,
             };
             let size = Dir::size(&dir);
-            if size > min_dir_size_to_free && (dir_size_to_free.is_none() || dir_size_to_free.unwrap() > size) {
+            if size > min_dir_size_to_free
+                && (dir_size_to_free.is_none() || dir_size_to_free.unwrap() > size)
+            {
                 dir_size_to_free = Some(size);
             }
             match dir.try_borrow() {
@@ -69,12 +75,15 @@ pub fn min_dir_size_to_free(dirs_commands_filename: &str, disk_size: usize, size
         }
         match dir_size_to_free {
             Some(size) => size,
-            None => panic!("could not find any candidate to clean")
+            None => panic!("could not find any candidate to clean"),
         }
     })
 }
 
-fn build_dirs_and_apply<F>(dirs_commands_filename: &str, compute_from: F) -> usize where F: Fn(Option<Rc<RefCell<Dir>>>) -> usize {
+fn build_dirs_and_apply<F>(dirs_commands_filename: &str, compute_from: F) -> usize
+where
+    F: Fn(Option<Rc<RefCell<Dir>>>) -> usize,
+{
     if let Ok(lines) = lines(dirs_commands_filename) {
         let mut root_dir: Option<Rc<RefCell<Dir>>> = None;
         let mut current_dir: Option<Rc<RefCell<Dir>>> = None;
@@ -113,7 +122,7 @@ fn build_dirs_and_apply<F>(dirs_commands_filename: &str, compute_from: F) -> usi
                 };
             }
         }
-    return compute_from(root_dir)
+        return compute_from(root_dir);
     };
     panic!("should have found file {}", dirs_commands_filename)
 }
@@ -126,7 +135,7 @@ lazy_static! {
     static ref LS_LINE_REGEX: Regex = Regex::new(r"^\$ ls$").unwrap();
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 struct Dir {
     name: Option<String>,
     parent: Option<Rc<RefCell<Dir>>>,
@@ -179,7 +188,7 @@ impl Dir {
         }
     }
 
-    fn parent(dir: Rc<RefCell<Dir>>)-> Option<Rc<RefCell<Dir>>> {
+    fn parent(dir: Rc<RefCell<Dir>>) -> Option<Rc<RefCell<Dir>>> {
         match dir.try_borrow() {
             Ok(dir) => match dir.to_owned().parent {
                 Some(parent) => Some(Rc::clone(&parent)),
@@ -216,13 +225,13 @@ impl Dir {
                     size += Dir::size(&dir);
                 }
                 size
-            },
+            }
             Err(_) => panic!("could not borrow as mutable the current dir"),
         }
     }
 }
 
-#[derive(Clone,Debug)]
+#[derive(Clone, Debug)]
 struct File {
     size: usize,
 }
@@ -231,9 +240,9 @@ impl File {
     fn try_create(line: &str) -> Result<Self, ()> {
         let mut file_line_matches = FILE_LINE_REGEX.captures_iter(line);
         match file_line_matches.next() {
-            Some(captures) => {
-                Ok(File{size: usize::from_str_radix(&captures[1], 10).unwrap()})
-            },
+            Some(captures) => Ok(File {
+                size: usize::from_str_radix(&captures[1], 10).unwrap(),
+            }),
             _ => Err(()),
         }
     }

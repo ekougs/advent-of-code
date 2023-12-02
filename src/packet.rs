@@ -13,7 +13,8 @@ pub fn start_idx(packet_marker_filename: &str, marker_length: usize) -> usize {
                 if packet_chars_queue.len() < marker_length {
                     continue;
                 }
-                let packet_chars_set: HashSet<char> = HashSet::from_iter(packet_chars_queue.clone());
+                let packet_chars_set: HashSet<char> =
+                    HashSet::from_iter(packet_chars_queue.clone());
                 if packet_chars_set.len() == marker_length {
                     break;
                 }

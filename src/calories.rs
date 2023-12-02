@@ -1,8 +1,8 @@
+use crate::utils::lines;
 use min_max_heap::MinMaxHeap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use crate::utils::lines;
 
 pub fn count_calories(calories_filename: &str, topn: usize) -> i64 {
     // Create a path to the desired file
